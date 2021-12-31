@@ -48,7 +48,7 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
     greedy_tree = nx.DiGraph()
     available_nodes = list(graph.nodes)
     available_nodes.remove(root_name)
-    greedy_tree.add_node(root_name, distance=0, real_name="A")
+    greedy_tree.add_node(root_name, distance=0, real_name=root_name)
     node_colors.append(levels_colors[0])
     print("The root distance =", greedy_tree.nodes[root_name]['distance'], '\n')
     print("The root successors : ", graph.adj[root_name])
@@ -68,7 +68,7 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
     print("\n------------------ RECURSIVE STARTED HERE  !--------------\n")
     greedy_algorithm_recursive(graph, greedy_tree, best_node[0], available_nodes, 2)
     # pos = nx.planar_layout(greedy_tree)
-    pos=graphviz_layout(greedy_tree , prog="dot")
+    pos = graphviz_layout(greedy_tree, prog="dot")
     nx.draw(greedy_tree, with_labels=True, font_weight='bold', node_size=1500, alpha=0.5, node_color=node_colors,
             pos=pos)
 
@@ -112,3 +112,97 @@ def greedy_algorithm_recursive(graph: nx.Graph, greedy_tree: nx.DiGraph, best_no
     #     greedy_tree.nodes['A']['distance'] = final_distance
     #     greedy_tree.add_weighted_edges_from([(best_node_graph[0] * (level), 'A', graph.edges[
     #         best_node_graph[0], 'A'])])
+
+
+# For the complete algorithm
+def complete_algorithm_init(graph: nx.Graph, root_name: str):
+    global levels_colors
+    global node_colors
+    complete_tree = nx.DiGraph()
+    available_nodes = list(graph.nodes)
+    available_nodes.remove(root_name)
+    complete_tree.add_node(root_name, distance=0, real_name=root_name)
+    node_colors.append(levels_colors[0])
+    print("The root distance =", complete_tree.nodes[root_name]['distance'], '\n')
+    print("The root successors : ", graph.adj[root_name])
+    root_adjacents = graph.adj[root_name]
+    # we execute the recusivite in each children of the root
+    for node_name, node_details in root_adjacents.items():
+        edge_weight = node_details['weight']
+        print("node name =", node_name, "\n")
+        print("edge weight =", edge_weight, "\n")
+        complete_tree.add_node(node_name, distance=edge_weight, parents=[root_name])
+        node_colors.append(levels_colors[1])
+        complete_tree.add_weighted_edges_from([(root_name, node_name, edge_weight)])
+        print("\n------------------ RECURSIVE STARTED HERE  !--------------\n")
+        complete_algorithm_recursive(graph, complete_tree, node_name, 2)
+    pos = graphviz_layout(complete_tree, prog="dot")
+    # pos=nx.spiral_layout(complete_tree)
+    # plt.figure(figsize=(10,4) , dpi=200)
+    fig, ax = plt.subplots()
+    nx.draw(complete_tree, with_labels=True, alpha=0.5,
+            pos=pos , font_size=8)
+    fig.set_size_inches([200 , 20])
+    plt.savefig("myplot2.svg" , dpi=200)
+    plt.show()
+    return complete_tree
+
+
+def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, actual_node: str, level: int):
+    global levels_colors
+    global node_colors
+    print("---------- LEVEL = ", level, "-----------")
+    print("----------- ACTUAL NODES : ", complete_tree.nodes, "----------")
+    if nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) != 0:
+        actual_node_name_in_complete = actual_node * (level - 1) + str(
+            nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) - 1)  # C....C
+    else:
+        actual_node_name_in_complete = actual_node * (level - 1)  # C....C
+    actual_node_name_in_graph = actual_node  # C
+    print("actual node name in teh graph =", actual_node_name_in_graph, "\n")
+    print("actual node name in complete tree =", actual_node_name_in_complete, "\n")
+    actual_distance = complete_tree.nodes[actual_node_name_in_complete]['distance']
+    next_adjacents = graph.adj[actual_node_name_in_graph]
+    actual_node_parents = complete_tree.nodes[actual_node_name_in_complete]['parents']
+    print("Actual node parents =", actual_node_parents)
+    for node_name, node_details in next_adjacents.items():
+        # same first letter means same node
+        print('node name adjacent =', node_name)
+        print('actual node parents =', actual_node_parents)
+        # # I HAVE TO CORRECT THE CONDITION HERE ! ( ACTUAL_NODE_PARENTS IS A LOST , I HAVE TO CHECK FOR EVERY FIRST LETTER IN EVERY ITEM THERE )
+        if not (isNodeAlreadyPassedBy(actual_node_parents, node_name)) and node_name[0] != actual_node[0]:
+            child_name_in_complete = (node_name * level) + str(
+                nodeNameCpt(complete_tree.nodes, (node_name * level)))  # C....C
+            print("I will create a child node : ", child_name_in_complete)
+            edge_weight = node_details['weight']
+            actual_parents_child = list(actual_node_parents)
+            actual_parents_child.append(actual_node)
+            child_distance = actual_distance + edge_weight
+            complete_tree.add_node(child_name_in_complete, distance=child_distance, parents=actual_parents_child)
+            complete_tree.add_weighted_edges_from([(actual_node_name_in_complete, child_name_in_complete, edge_weight)])
+            complete_algorithm_recursive(graph, complete_tree, node_name[0], level + 1)
+
+
+def isNodeAlreadyPassedBy(parents: list[str], node_name: str):
+    passed_by = False
+    for parent in parents:
+        print("IS parent =", parents, "\n")
+        print("IS Node name  =", node_name, "\n")
+        if parent[0] == node_name[0]:
+            passed_by = True
+            break
+    return passed_by
+
+
+# if i want to create a CCC node and CCC1 , CCC2 already exists then i should name it CCC3
+def nodeNameCpt(nodes, target_name):
+    cpt = None
+    for node in nodes:
+        if (target_name in node) and len(node) == len(target_name) + 1:
+            if cpt == None or int(node[-1]) > cpt:
+                cpt = int(node[-1])
+    if cpt == None:
+        cpt = 0
+    else:
+        cpt += 1
+    return cpt
