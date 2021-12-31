@@ -141,10 +141,10 @@ def complete_algorithm_init(graph: nx.Graph, root_name: str):
     # plt.figure(figsize=(10,4) , dpi=200)
     fig, ax = plt.subplots()
     nx.draw(complete_tree, with_labels=True, alpha=0.5,
-            pos=pos , font_size=8)
-    fig.set_size_inches([200 , 20])
-    plt.savefig("myplot2.svg" , dpi=200)
-    plt.show()
+            pos=pos, font_size=8 )
+    fig.set_size_inches([600, 30])
+    plt.savefig("myplot4.svg", dpi=200)
+    # plt.show()
     return complete_tree
 
 
@@ -155,7 +155,7 @@ def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, act
     print("----------- ACTUAL NODES : ", complete_tree.nodes, "----------")
     if nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) != 0:
         actual_node_name_in_complete = actual_node * (level - 1) + str(
-            nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) - 1)  # C....C
+            nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) - 1)  # C....C7
     else:
         actual_node_name_in_complete = actual_node * (level - 1)  # C....C
     actual_node_name_in_graph = actual_node  # C
@@ -186,8 +186,6 @@ def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, act
 def isNodeAlreadyPassedBy(parents: list[str], node_name: str):
     passed_by = False
     for parent in parents:
-        print("IS parent =", parents, "\n")
-        print("IS Node name  =", node_name, "\n")
         if parent[0] == node_name[0]:
             passed_by = True
             break
@@ -198,9 +196,13 @@ def isNodeAlreadyPassedBy(parents: list[str], node_name: str):
 def nodeNameCpt(nodes, target_name):
     cpt = None
     for node in nodes:
-        if (target_name in node) and len(node) == len(target_name) + 1:
-            if cpt == None or int(node[-1]) > cpt:
-                cpt = int(node[-1])
+        if (target_name in node):
+            try:
+                node_number = int(node.replace(target_name, "" , 1))
+                if cpt == None or node_number > cpt:
+                    cpt = node_number
+            except ValueError:
+                useless=2
     if cpt == None:
         cpt = 0
     else:
