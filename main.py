@@ -8,10 +8,13 @@ from anytree import Node, RenderTree
 import matplotlib.pyplot as plt
 import pydot
 from networkx.drawing.nx_pydot import graphviz_layout
+import  json
 import scipy as sp
 
 levels_colors = ["#000000", "#ff0000", "#00ff00", "#0000ff", "#333", "#eee", "#ffff00"]
 node_colors = []
+complete_tree_edges_lables = dict()
+complete_tree_final_distances = list()
 
 
 def create_graph_from_excel_file(absolutePath):
@@ -118,6 +121,7 @@ def greedy_algorithm_recursive(graph: nx.Graph, greedy_tree: nx.DiGraph, best_no
 def complete_algorithm_init(graph: nx.Graph, root_name: str):
     global levels_colors
     global node_colors
+    global complete_tree_edges_lables
     complete_tree = nx.DiGraph()
     available_nodes = list(graph.nodes)
     available_nodes.remove(root_name)
@@ -134,23 +138,36 @@ def complete_algorithm_init(graph: nx.Graph, root_name: str):
         complete_tree.add_node(node_name, distance=edge_weight, parents=[root_name])
         node_colors.append(levels_colors[1])
         complete_tree.add_weighted_edges_from([(root_name, node_name, edge_weight)])
+        complete_tree_edges_lables[(root_name, node_name)] = edge_weight
+        print("EDGE LABELS =", complete_tree_edges_lables)
         print("\n------------------ RECURSIVE STARTED HERE  !--------------\n")
-        complete_algorithm_recursive(graph, complete_tree, node_name, 2)
+        complete_algorithm_recursive(graph, complete_tree, node_name, 2 , root_name)
     pos = graphviz_layout(complete_tree, prog="dot")
     # pos=nx.spiral_layout(complete_tree)
     # plt.figure(figsize=(10,4) , dpi=200)
     fig, ax = plt.subplots()
     nx.draw(complete_tree, with_labels=True, alpha=0.5,
-            pos=pos, font_size=8 )
+            pos=pos, font_size=8)
+    nx.draw_networkx_edge_labels(
+        complete_tree, pos,
+        edge_labels=complete_tree_edges_lables,
+        font_color='red'
+    )
     fig.set_size_inches([600, 30])
-    plt.savefig("myplot4.svg", dpi=200)
+    plt.savefig("myplot.svg", dpi=200)
+    shortestPath = min(complete_tree_final_distances, key=lambda x: x['final_distance'])
+    with open('result.txt', 'w') as result_file:
+        result_file.write(json.dumps(shortestPath))
+
     # plt.show()
+
     return complete_tree
 
 
-def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, actual_node: str, level: int):
+def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, actual_node: str, level: int , root_name :str):
     global levels_colors
     global node_colors
+    global complete_tree_final_distances
     print("---------- LEVEL = ", level, "-----------")
     print("----------- ACTUAL NODES : ", complete_tree.nodes, "----------")
     if nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) != 0:
@@ -180,7 +197,14 @@ def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, act
             child_distance = actual_distance + edge_weight
             complete_tree.add_node(child_name_in_complete, distance=child_distance, parents=actual_parents_child)
             complete_tree.add_weighted_edges_from([(actual_node_name_in_complete, child_name_in_complete, edge_weight)])
-            complete_algorithm_recursive(graph, complete_tree, node_name[0], level + 1)
+            complete_tree_edges_lables[(actual_node_name_in_complete, child_name_in_complete)] = child_distance
+            if level == len(graph.nodes)-1:
+                path = actual_parents_child.copy()
+                path.append(node_name)
+                complete_tree_final_distances.append(
+                    {"final_distance": child_distance + graph.edges[node_name, root_name]['weight'], "path": path})
+                print("FINAL DISTANCES =", complete_tree_final_distances)
+            complete_algorithm_recursive(graph, complete_tree, node_name[0], level + 1 , root_name)
 
 
 def isNodeAlreadyPassedBy(parents: list[str], node_name: str):
@@ -198,11 +222,11 @@ def nodeNameCpt(nodes, target_name):
     for node in nodes:
         if (target_name in node):
             try:
-                node_number = int(node.replace(target_name, "" , 1))
+                node_number = int(node.replace(target_name, "", 1))
                 if cpt == None or node_number > cpt:
                     cpt = node_number
             except ValueError:
-                useless=2
+                useless = 2
     if cpt == None:
         cpt = 0
     else:

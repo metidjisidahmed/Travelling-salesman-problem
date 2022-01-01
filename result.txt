@@ -1,0 +1,1 @@
+{"final_distance": 38.0, "path": ["A", "B", "D", "G", "E", "C", "F"]}
