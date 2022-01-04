@@ -16,6 +16,9 @@ node_colors = []
 complete_tree_edges_lables = dict()
 complete_tree_final_distances = list()
 
+pathGreedy=[]
+distanceGreedy=0
+
 
 def create_graph_from_excel_file(absolutePath):
     data = pd.read_excel(absolutePath, index_col=0)
@@ -40,14 +43,19 @@ def create_graph_from_excel_file(absolutePath):
     # a table we can convert to edges
     result_graph.add_edges_from(edges_tables)
     print("\nAll graph edges =", result_graph.edges, "\n")
-    print("edge between A and B = \n", result_graph.edges['B', 'A'], "\n")
+    # print("edge between A and B = \n", result_graph.edges['B', 'A'], "\n")
 
     return result_graph
 
 
 def greedy_algorithm_init(graph: nx.Graph, root_name: str):
+    """
+
+    :rtype: object
+    """
     global levels_colors
     global node_colors
+    global pathGreedy
     greedy_tree = nx.DiGraph()
     available_nodes = list(graph.nodes)
     available_nodes.remove(root_name)
@@ -57,12 +65,14 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
     print("The root successors : ", graph.adj[root_name])
     root_adjacents = graph.adj[root_name]
     # the shortest way : so we will use il our next mouvement
+    finaaal_distance=104
     best_node = None
     for node_name, node_details in root_adjacents.items():
         edge_weight = node_details['weight']
         print("node name =", node_name, "\n")
         print("edge weight =", edge_weight, "\n")
         greedy_tree.add_node(node_name, distance=edge_weight)
+        pathGreedy.append(node_name)
         node_colors.append(levels_colors[1])
         greedy_tree.add_weighted_edges_from([(root_name, node_name, edge_weight)])
         if best_node is None or best_node[1] > edge_weight:
@@ -74,6 +84,31 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
     pos = graphviz_layout(greedy_tree, prog="dot")
     nx.draw(greedy_tree, with_labels=True, font_weight='bold', node_size=1500, alpha=0.5, node_color=node_colors,
             pos=pos)
+    print("PATH GREEDY =",pathGreedy)
+    pathGreedy.insert(0 , "A")
+    Dict = dict()
+    Dict["path"]=pathGreedy
+    Dict["final_distance"]=finaaal_distance
+    plt.savefig("TPGO_TP_4/myplot_greedy.svg", dpi=200)
+    # plt.show()
+    dictNumbers={
+        "A" : "1",
+        "B" : "2",
+        "C" : "3",
+        "D" : "4",
+        "E" : "5",
+        "F" : "6"
+    }
+    shortestPath = Dict
+    with open('TPGO_TP_4/result_greedy.txt', 'w') as result_file:
+        for index , pathItem in enumerate(shortestPath["path"]):
+            print("Index = " , index , "pathItem =" , pathItem)
+            shortestPath["path"][index]=dictNumbers[pathItem]
+        result_file.write(json.dumps(shortestPath))
+    # for index , pathitem in enumerate(pathGreedy):
+    #     if(index < len(pathGreedy)-1):
+    #         weight = nx.get_edge_attributes(graph, 'color')
+    #         print("Edge =" , weight[(pathGreedy[index] , pathGreedy[index+1])])
 
     plt.show()
 
@@ -97,6 +132,7 @@ def greedy_algorithm_recursive(graph: nx.Graph, greedy_tree: nx.DiGraph, best_no
         if node_name in available_nodes:
             new_distance = greedy_tree.nodes[best_node_name_in_greedy]['distance'] + edge_weight
             greedy_tree.add_node(node_name * level, distance=new_distance)
+
             node_colors.append(levels_colors[level])
             greedy_tree.add_weighted_edges_from([(best_node_name_in_greedy, node_name * level, edge_weight)])
             if best_node_graph is None or best_node_graph[1] > edge_weight:
@@ -154,9 +190,22 @@ def complete_algorithm_init(graph: nx.Graph, root_name: str):
         font_color='red'
     )
     fig.set_size_inches([600, 30])
-    plt.savefig("myplot.svg", dpi=200)
+    plt.savefig("TPGO_TP_4/myplot.svg", dpi=200)
+    # plt.show()
+    dictNumbers={
+        "A" : "1",
+        "B" : "2",
+        "C" : "3",
+        "D" : "4",
+        "E" : "5",
+        "F" : "6"
+    }
     shortestPath = min(complete_tree_final_distances, key=lambda x: x['final_distance'])
-    with open('result.txt', 'w') as result_file:
+    with open('TPGO_TP_4/result.txt', 'w') as result_file:
+        print("shortest Path = " , shortestPath)
+        for index , pathItem in enumerate(shortestPath["path"]):
+            print("Index = " , index , "pathItem =" , pathItem)
+            shortestPath["path"][index]=dictNumbers[pathItem]
         result_file.write(json.dumps(shortestPath))
 
     # plt.show()
@@ -168,29 +217,29 @@ def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, act
     global levels_colors
     global node_colors
     global complete_tree_final_distances
-    print("---------- LEVEL = ", level, "-----------")
-    print("----------- ACTUAL NODES : ", complete_tree.nodes, "----------")
+    # print("---------- LEVEL = ", level, "-----------")
+    # print("----------- ACTUAL NODES : ", complete_tree.nodes, "----------")
     if nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) != 0:
         actual_node_name_in_complete = actual_node * (level - 1) + str(
             nodeNameCpt(complete_tree.nodes, actual_node * (level - 1)) - 1)  # C....C7
     else:
         actual_node_name_in_complete = actual_node * (level - 1)  # C....C
     actual_node_name_in_graph = actual_node  # C
-    print("actual node name in teh graph =", actual_node_name_in_graph, "\n")
-    print("actual node name in complete tree =", actual_node_name_in_complete, "\n")
+    # print("actual node name in teh graph =", actual_node_name_in_graph, "\n")
+    # print("actual node name in complete tree =", actual_node_name_in_complete, "\n")
     actual_distance = complete_tree.nodes[actual_node_name_in_complete]['distance']
     next_adjacents = graph.adj[actual_node_name_in_graph]
     actual_node_parents = complete_tree.nodes[actual_node_name_in_complete]['parents']
-    print("Actual node parents =", actual_node_parents)
+    # print("Actual node parents =", actual_node_parents)
     for node_name, node_details in next_adjacents.items():
         # same first letter means same node
-        print('node name adjacent =', node_name)
-        print('actual node parents =', actual_node_parents)
+        # print('node name adjacent =', node_name)
+        # print('actual node parents =', actual_node_parents)
         # # I HAVE TO CORRECT THE CONDITION HERE ! ( ACTUAL_NODE_PARENTS IS A LOST , I HAVE TO CHECK FOR EVERY FIRST LETTER IN EVERY ITEM THERE )
         if not (isNodeAlreadyPassedBy(actual_node_parents, node_name)) and node_name[0] != actual_node[0]:
             child_name_in_complete = (node_name * level) + str(
                 nodeNameCpt(complete_tree.nodes, (node_name * level)))  # C....C
-            print("I will create a child node : ", child_name_in_complete)
+            # print("I will create a child node : ", child_name_in_complete)
             edge_weight = node_details['weight']
             actual_parents_child = list(actual_node_parents)
             actual_parents_child.append(actual_node)
@@ -203,7 +252,7 @@ def complete_algorithm_recursive(graph: nx.Graph, complete_tree: nx.DiGraph, act
                 path.append(node_name)
                 complete_tree_final_distances.append(
                     {"final_distance": child_distance + graph.edges[node_name, root_name]['weight'], "path": path})
-                print("FINAL DISTANCES =", complete_tree_final_distances)
+                # print("FINAL DISTANCES =", complete_tree_final_distances)
             complete_algorithm_recursive(graph, complete_tree, node_name[0], level + 1 , root_name)
 
 
