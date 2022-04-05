@@ -10,6 +10,8 @@ import pydot
 from networkx.drawing.nx_pydot import graphviz_layout
 import  json
 import scipy as sp
+from typing import Tuple
+
 
 levels_colors = ["#000000", "#ff0000", "#00ff00", "#0000ff", "#333", "#eee", "#ffff00"]
 node_colors = []
@@ -19,6 +21,12 @@ complete_tree_final_distances = list()
 pathGreedy=[]
 distanceGreedy=0
 
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+directory = os.getcwd()
 
 def create_graph_from_excel_file(absolutePath):
     data = pd.read_excel(absolutePath, index_col=0)
@@ -89,7 +97,7 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
     Dict = dict()
     Dict["path"]=pathGreedy
     Dict["final_distance"]=finaaal_distance
-    plt.savefig("TPGO_TP_4/myplot_greedy.svg", dpi=200)
+    plt.savefig(directory+"/myplot_greedy.svg", dpi=200)
     # plt.show()
     dictNumbers={
         "A" : "1",
@@ -100,7 +108,7 @@ def greedy_algorithm_init(graph: nx.Graph, root_name: str):
         "F" : "6"
     }
     shortestPath = Dict
-    with open('TPGO_TP_4/result_greedy.txt', 'w') as result_file:
+    with open(directory+'/result_greedy.txt', 'w') as result_file:
         for index , pathItem in enumerate(shortestPath["path"]):
             print("Index = " , index , "pathItem =" , pathItem)
             shortestPath["path"][index]=dictNumbers[pathItem]
@@ -190,7 +198,7 @@ def complete_algorithm_init(graph: nx.Graph, root_name: str):
         font_color='red'
     )
     fig.set_size_inches([600, 30])
-    plt.savefig("TPGO_TP_4/myplot.svg", dpi=200)
+    plt.savefig(directory+"/myplot.svg", dpi=200)
     # plt.show()
     dictNumbers={
         "A" : "1",
@@ -201,7 +209,7 @@ def complete_algorithm_init(graph: nx.Graph, root_name: str):
         "F" : "6"
     }
     shortestPath = min(complete_tree_final_distances, key=lambda x: x['final_distance'])
-    with open('TPGO_TP_4/result.txt', 'w') as result_file:
+    with open(directory+'/result.txt', 'w') as result_file:
         print("shortest Path = " , shortestPath)
         for index , pathItem in enumerate(shortestPath["path"]):
             print("Index = " , index , "pathItem =" , pathItem)
