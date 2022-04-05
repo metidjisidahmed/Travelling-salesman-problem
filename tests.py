@@ -15,11 +15,13 @@ dname = os.path.dirname(abspath)
 os.chdir(dname)
 directory = os.getcwd()
 
+starting_node = "A"
+
 def testGreedy():
     print("DIRECTORY = \n",directory)
     time_before = datetime.datetime.now()
     graph = create_graph_from_excel_file(directory+'/data.xlsx')
-    greedy_algorithm_init(graph, "A")
+    greedy_algorithm_init(graph, starting_node)
     time_after = datetime.datetime.now()
     print("Time Greedy algo =", (time_after - time_before).microseconds / 1000000, " Seconds ")
 
@@ -29,7 +31,7 @@ def testGreedy():
 def testComplete():
     time_before = datetime.datetime.now()
     graph = create_graph_from_excel_file(directory+'/data.xlsx')
-    result = complete_algorithm_init(graph, "A")
+    result = complete_algorithm_init(graph, starting_node)
     time_after = datetime.datetime.now()
     print("Time Complete algo =", (time_after - time_before).microseconds / 1000000, " Seconds ")
     return True
