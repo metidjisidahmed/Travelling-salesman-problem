@@ -31,7 +31,15 @@ File | Description | Remark
 
 ### Inputs -Example-
 
+- `data.xlsx`
+
 ![alt text](https://github.com/metidjisidahmed/TPGO_TP_4/blob/main/demo_data_sheet.png?raw=true "Logo Title Text 1")
+
+- `starting_node`
+
+  ```python
+  starting_node = "A"
+  ``` 
 
 ### Outputs 
 
