@@ -47,7 +47,7 @@ File | Description | Remark
 --- | --- | ---
 `myplot.svg`| A vectorized Image representing the **complete probability** tree generated using the library **NetworkX** and visalized using **Matplotlib**   | Open The Image in the Navigator for better visualization 
 `myplot_greedy.svg`| A vectorized Image representing  the **greedy** tree  generated using the library **NetworkX** and visalized using **Matplotlib**   | Open The Image in the Navigator for better visualization
-`result.txt` | a generated .txt file containing JSON object with two fields : *path*  and *final_distance* | path represents the optimized path and final_distance represents the cost of the optimized path
+`result.txt` / `result_greedy.txt`  | a generated .txt file containing JSON object with two fields : *path*  and *final_distance* | path represents the optimized path and final_distance represents the cost of the optimized path
 
 ### Outputs -Example-
 
@@ -59,7 +59,7 @@ File | Description | Remark
 
   ![image](https://user-images.githubusercontent.com/43441621/161794426-34341728-0914-46b4-9e6c-eb0ef5fea74a.png)  
   
-- `result.txt`
+- `result.txt` / `result_greedy.txt`
 
   ```javascript
   {"final_distance": 100.0, "path": ["1", "4", "2", "5", "3", "6"]}
